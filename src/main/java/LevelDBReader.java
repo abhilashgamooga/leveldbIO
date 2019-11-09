@@ -4,6 +4,7 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 
 import org.fusesource.leveldbjni.internal.NativeDB;
+import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.Options;
@@ -15,13 +16,14 @@ public class LevelDBReader {
     DB writeDb;
 
     public LevelDBReader() throws IOException {
-        File dbPath = Paths.get("/data/master/0/2019-9/").toFile();
-        File dbWritePath = Paths.get("/data/master/0/2040-9/").toFile();
+        File dbPath = Paths.get("/data/master/0/2019-10/").toFile();
+        File dbWritePath = Paths.get("/data/test/compressed/2019-10/").toFile();
 
         Options options = new Options();
         options.createIfMissing(true);
         options.writeBufferSize(256 << 20);
         options.blockSize(64 * 1024);
+        options.compressionType(CompressionType.SNAPPY);
         this.db = factory.open(dbPath, options);
         this.writeDb = factory.open(dbWritePath, options);
     }
@@ -42,7 +44,7 @@ public class LevelDBReader {
                 System.out.println("got invalid data {}"+props.toString());
                 continue;
             }
-            String newKey = props[0]+":"+props[1]+":"+props[3]+":"+props[2];
+            String newKey = props[1]+":"+props[2]+":"+props[3];
             this.writeDb.put(bytes(newKey), val);
 
             ++i;
