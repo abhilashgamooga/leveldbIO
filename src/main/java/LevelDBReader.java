@@ -28,7 +28,7 @@ public class LevelDBReader {
         this.writeDb = factory.open(dbWritePath, options);
     }
 
-    public void start() {
+    public void start() throws IOException {
         DBIterator iterator = this.db.iterator();
         int i =0;
         System.out.println("Leveldb Read Start - "+System.currentTimeMillis());
@@ -49,7 +49,10 @@ public class LevelDBReader {
 
             ++i;
         }
-        System.out.println("Leveldb Read End - "+System.currentTimeMillis());
+        System.out.println("leveldb read end compaction started- "+System.currentTimeMillis());
+        db.compactRange(new byte[]{0x00}, new byte[]{0x7f});
+        db.close();
+        System.out.println("Leveldb compaction End - "+System.currentTimeMillis());
     }
     public static void main(String[] args) {
         try {
