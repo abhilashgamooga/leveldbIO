@@ -13,9 +13,6 @@ import static org.fusesource.leveldbjni.JniDBFactory.asString;
 import static org.fusesource.leveldbjni.JniDBFactory.factory;
 
 public class RockDbWriter {
-    private DB readDb;
-    private DB writeLevelDb;
-    private RocksDB writeDb;
     public RockDbWriter() {
         // a static method that loads the RocksDB C++ library.
 
@@ -31,46 +28,32 @@ public class RockDbWriter {
                 options.blockSize(64 * 1024);
                 options.compressionType(CompressionType.SNAPPY);
                 try {
-                    this.readDb = factory.open(dbPath, options);
+                    DB readDb = factory.open(dbPath, options);
+                    RocksDB writeDb = RocksDB.open("/data/rocksdb/master/" + i + "/2019-"+y+"/");
+
+                    DBIterator iterator = readDb.iterator();
+                    int c = 0;
+                    System.out.println("Reading "+i+" month "+y+" Start - " + System.currentTimeMillis());
+                    for (iterator.seekToFirst(); iterator.hasNext(); iterator.next()) {
+                        if (c > 10000000) {
+                            c = 0;
+                            System.out.println("read 10000000");
+                        }
+                        byte[] key = (iterator.peekNext().getKey());
+                        byte[] val = (iterator.peekNext().getKey());
+                        writeDb.put(key, val);
+                        ++c;
+                    }
+                    System.out.println("write completed "+i+" month "+y+" ----------------");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                // the Options class contains a set of configurable DB options
-                // that determines the behaviour of the database.
-                try {
-                    this.writeDb = RocksDB.open("/data/rocksdb/master/" + i + "/2019-"+y+"/");
-                } catch (RocksDBException e) {
-                    // do some error handling
-                    e.printStackTrace();
-                }
-
-                DBIterator iterator = this.readDb.iterator();
-                int c = 0;
-                System.out.println("Reading "+i+" month "+y+" Start - " + System.currentTimeMillis());
-                for (iterator.seekToFirst(); iterator.hasNext(); iterator.next()) {
-                    if (c > 10000000) {
-                        c = 0;
-                        System.out.println("read 10000000");
-                    }
-                    byte[] key = (iterator.peekNext().getKey());
-                    byte[] val = (iterator.peekNext().getKey());
-                    this.writeDb.put(key, val);
-                    this.writeLevelDb.put(key, val);
-                    ++c;
-                }
-                System.out.println("write completed "+i+" month "+y+" ----------------");
             }
         }
 
 
     }
-
-    public void test() throws RocksDBException {
-        WriteOptions options = new WriteOptions();
-        options.disableWAL();
-
-        this.writeDb.put(options, ".gabhilash".getBytes(), "isgoood".getBytes());
-    }
+    
     public static void main(String[] args) {
         RockDbWriter app = new RockDbWriter();
         try{
