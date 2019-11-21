@@ -40,7 +40,7 @@ public class RockDbWriter {
                             System.out.println("read 10000000");
                         }
                         byte[] key = (iterator.peekNext().getKey());
-                        byte[] val = (iterator.peekNext().getKey());
+                        byte[] val = (iterator.peekNext().getValue());
                         writeDb.put(key, val);
                         ++c;
                     }
@@ -53,7 +53,7 @@ public class RockDbWriter {
 
 
     }
-    
+
     public static void main(String[] args) {
         RockDbWriter app = new RockDbWriter();
         try{
