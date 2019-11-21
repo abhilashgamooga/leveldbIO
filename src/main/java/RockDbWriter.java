@@ -18,7 +18,7 @@ public class RockDbWriter {
 
     }
     public void start() throws RocksDBException, IOException {
-        for(int i=1; i < 8; i++) {
+        for(int i=0; i < 8; i++) {
             for(int y = 8; y < 10; y++) {
                 RocksDB.loadLibrary();
                 File dbPath = Paths.get("/data/master/" + i + "/2019-"+y+"/").toFile();
@@ -44,6 +44,9 @@ public class RockDbWriter {
                         writeDb.put(key, val);
                         ++c;
                     }
+                    iterator.close();
+                    readDb.close();
+                    writeDb.close();
                     System.out.println("write completed "+i+" month "+y+" ----------------");
                 } catch (IOException e) {
                     e.printStackTrace();
