@@ -22,7 +22,7 @@ public class LevelDBReader {
 
     public LevelDBReader() throws IOException {
         File dbPath = Paths.get("/data/master/0/2019-9/").toFile();
-        File dbWritePath = Paths.get("/data/new/master/2019-9/").toFile();
+        File dbWritePath = Paths.get("/data/new/master/0/2019-9/").toFile();
 
         Options options = new Options();
         options.createIfMissing(true);
