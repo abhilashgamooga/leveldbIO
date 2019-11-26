@@ -42,23 +42,14 @@ public class LevelDBReader {
                 i=0;
                 System.out.println("read 10000000");
             }
-            String key = asString(iterator.peekNext().getKey());
+
             byte[] val = iterator.peekNext().getValue();
             JSONObject valObj = new JSONObject(asString(val));
 
-            String[] props = key.split(":");
-            if(props.length != 4) {
-                System.out.println("got invalid data {}"+props.toString());
-                continue;
-            }
-            String newKey = props[1]+":"+props[2]+":"+props[3];
-            this.writeDb.put(bytes(newKey), this.converJsonToNewEncode(valObj));
-
+            this.writeDb.put(iterator.peekNext().getKey(), this.converJsonToNewEncode(valObj));
             ++i;
         }
         System.out.println("leveldb read end compaction started- "+System.currentTimeMillis());
-        writeDb.compactRange(null, null);
-        writeDb.close();
         System.out.println("Leveldb compaction End - "+System.currentTimeMillis());
     }
 
