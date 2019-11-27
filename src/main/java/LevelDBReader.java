@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.stream.IntStream;
 
@@ -49,8 +50,7 @@ public class LevelDBReader {
             this.writeDb.put(iterator.peekNext().getKey(), this.converJsonToNewEncode(valObj));
             ++i;
         }
-        System.out.println("leveldb read end compaction started- "+System.currentTimeMillis());
-        System.out.println("Leveldb compaction End - "+System.currentTimeMillis());
+        System.out.println("Leveldb End - "+System.currentTimeMillis());
     }
 
     public byte[] converJsonToNewEncode(JSONObject obj) {
@@ -76,14 +76,14 @@ public class LevelDBReader {
                 type = 0;
             }
             value += keyvalue;
-            String newKey = keyStr+":"+keyvalue.toString().length()+","+type;
+            String newKey = keyStr+"&"+keyvalue.toString().length()+"&"+type;
             key += newKey;
         }
         String returnVal = value+key+"*"+key.length();
         return returnVal.getBytes();
     }
 
-    public JSONObject convertEncodedBytesToJson(byte[] encoded) {
+    public JSONObject convertEncodedBytesToJson(byte[] encoded) throws Exception {
         int n = encoded.length;
         int x = n-1;
         int i = 0;
@@ -97,7 +97,6 @@ public class LevelDBReader {
             ++i;
         }
 
-        System.out.println(keySize);
         String completeKey = new String(Arrays.copyOfRange(encoded, x - keySize, x));
         String completeVal = new String(Arrays.copyOfRange(encoded, 0, x-keySize));
         System.out.println("complete key -> "+completeKey);
@@ -105,13 +104,13 @@ public class LevelDBReader {
         JSONObject response = new JSONObject();
         int index = 0;
         String[] keyArray = completeKey.split("&");
+
         for (int j=0; j < keyArray.length; j++) {
-            String[] vals = keyArray[j].split(":");
-            String key = vals[0];
-            System.out.println(vals[1]);
-            String[] indexAndType = vals[1].split(",");
-            int type = Integer.parseInt(indexAndType[1]);
-            int size = Integer.parseInt(indexAndType[0]);
+            String key = keyArray[j];
+            System.out.println(key);
+            int size = Integer.parseInt(keyArray[++j]);
+            int type = Integer.parseInt(keyArray[++j]);
+
             switch (type) {
                 case 1:
                     response.put(key, Integer.parseInt(completeVal.substring(index, index+size)));
@@ -136,7 +135,7 @@ public class LevelDBReader {
                     response.put(key, completeVal.substring(index, index+size));
                     break;
             }
-            index += Integer.parseInt(indexAndType[0]);
+            index += size;
         }
 
         return response;
@@ -148,11 +147,11 @@ public class LevelDBReader {
         try {
             System.out.println("data write started");
             LevelDBReader ldb = new LevelDBReader();
-//            String test = "2409:4040:407:9e23:af52:46af:c967:795eMumbai - Maharashtra, IndiaAndroid(none)trueIndiaAndroid 8.1.0Smytten 6.9.4Smytten5fc:38,0&563:27,0&476:7,0&323:6,0&710:4,5&887:5,0&756:13,0&4a5:13,0&3a9:7,0*75";
+//            String test = "521445477wpn193535ad25c&4&0&b44&5&0&c0a&3&0&82a&6&0&609&2&0*39";
 //            JSONObject resp = ldb.convertEncodedBytesToJson(test.getBytes());
 //            System.out.println(resp);
             ldb.start();
-            //System.out.println("data write ended");
+            System.out.println("data write ended");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println(" Exception occurred "+e.getMessage());
